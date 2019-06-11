@@ -1,3 +1,12 @@
+create type location_tracker (
+	cycle_end_date date,
+	trigger_date date,
+	total_trigger_count int,
+	daily_trigger_count int
+);
+
+
+
 create table campaign_blacklist
 (
     blacklist_value text,
