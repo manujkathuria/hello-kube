@@ -5,14 +5,22 @@ import (
 	"fmt"
 	"github.com/jinzhu/configor"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 const CONFIGOR_ENV = "production"
 
 func main() {
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 
 	KubeLoger("INFO", "Main", "Application level:"+CONFIGOR_ENV)
+
+	<-sigterm
+	KubeLoger("INFO", "Main", "Application Shutdown")
+
 }
 
 func KubeLoger(level string, funcName string, msg string) {
