@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-const CONFIGOR_ENV = "uat"
+//const CONFIGOR_ENV = "uat"
 
 func main() {
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 
-	KubeLoger("INFO", "Main", "Application level:"+CONFIGOR_ENV)
+	KubeLoger("INFO", "Main", "Application level:"+os.Getenv("CONFIGOR_ENV"))
 	MariaPrint()
 
 	<-sigterm
@@ -63,7 +63,7 @@ func LoadConfig() ConfigSchema {
 
 	var config ConfigSchema
 
-	err := configor.Load(&config, "./configs/config.yml")
+	err := configor.Load(&config, "/app/configs/config.yml")
 
 	if err != nil {
 		fmt.Println("File not found", err)
