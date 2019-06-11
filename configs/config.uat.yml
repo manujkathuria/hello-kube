@@ -1,0 +1,5 @@
+mariadb:
+  host: 172.168.1.142
+  user: camapign
+  password: abc
+  database: campaign

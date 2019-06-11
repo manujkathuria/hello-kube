@@ -1,8 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/configor"
 	"os"
 	"os/signal"
@@ -10,13 +12,14 @@ import (
 	"time"
 )
 
-const CONFIGOR_ENV = "production"
+const CONFIGOR_ENV = "uat"
 
 func main() {
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 
 	KubeLoger("INFO", "Main", "Application level:"+CONFIGOR_ENV)
+	MariaPrint()
 
 	<-sigterm
 	KubeLoger("INFO", "Main", "Application Shutdown")
@@ -68,4 +71,49 @@ func LoadConfig() ConfigSchema {
 	}
 
 	return config
+}
+
+func DBConnect() (db *sql.DB) {
+	Config := LoadConfig()
+	dbDriver := "mysql"
+	dbHost := Config.Mariadb.Host
+	dbUser := Config.Mariadb.User
+	dbPass := Config.Mariadb.Password
+	dbName := Config.Mariadb.Database
+
+	fmt.Println(dbUser, dbPass, dbHost)
+
+	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp("+dbHost+")/"+dbName)
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
+
+func MariaPrint() {
+
+	db := DBConnect()
+	defer db.Close()
+	results, err := db.Query("select * from campaign_master")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for results.Next() {
+		var campaign_code string
+		var campaign_name string
+		var desc string
+		var start_date sql.NullString
+		var end_date sql.NullString
+
+		err = results.Scan(&campaign_code, &campaign_name,
+			&desc, &start_date, &end_date)
+
+		if err != nil {
+			panic(err.Error())
+		}
+		fmt.Println(campaign_code, campaign_name)
+	}
+
 }
